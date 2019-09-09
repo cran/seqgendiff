@@ -12,9 +12,9 @@ set.seed(31) ## for reproducibility
 ## ------------------------------------------------------------------------
 nsamp <- 100
 ngene <- 10000
-mat <- matrix(stats::rpois(n = nsamp * ngene, lambda = 100), 
-              nrow = ngene,
-              ncol = nsamp)
+mat   <- matrix(stats::rpois(n = nsamp * ngene, lambda = 100), 
+                nrow = ngene,
+                ncol = nsamp)
 
 ## ------------------------------------------------------------------------
 submat <- select_counts(mat = mat, nsamp = 6, ngene = 1000)

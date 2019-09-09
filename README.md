@@ -15,6 +15,7 @@ v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/seqgendiff)](https://cran.r-project.org/package=seqgendiff)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/seqgendiff)](https://cran.r-project.org/package=seqgendiff)
 
 This package will take real RNA-seq data (either single-cell or bulk)
 and alter it by adding signal to it. This signal is in the form of a
@@ -84,16 +85,20 @@ Or you can check out the vignettes I post online:
 If you use this package, please cite:
 
 > Gerard D (2019). “Data-based RNA-seq Simulations by Binomial
-> Thinning.” *Unpublished Manuscript*.
+> Thinning.” *bioRxiv*. doi:
+> [10.1101/758524](https://doi.org/10.1101/758524).
 
 A BibTeX entry for LaTeX users is
 
 ``` tex
-@Article{,
-  title = {Data-based {RNA}-seq Simulations by Binomial Thinning},
-  year = {2019},
-  journal = {Unpublished Manuscript},
-  author = {David Gerard},
+@article{,
+    author = {Gerard, David},
+    title = {Data-based {RNA}-seq Simulations by Binomial Thinning},
+    elocation-id = {758524},
+    year = {2019},
+    doi = {10.1101/758524},
+    publisher = {Cold Spring Harbor Laboratory},
+    journal = {bioRxiv}
 }
 ```
 
