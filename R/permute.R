@@ -41,27 +41,18 @@ est_sv <- function(mat, n_sv, design_obs, use_sva = FALSE) {
 #'
 #' @inheritParams thin_diff
 #' @param sv A matrix of surrogate variables
-#' @param method Should we use the optimal matching technique from Hansen and
-#'     Klopfer (2006) (\code{"optmatch"}), the Gale-Shapley algorithm
+#' @param method Should we use the Gale-Shapley algorithm
 #'     for stable marriages (\code{"marriage"}) (Gale and Shapley, 1962)
 #'     as implemented in the matchingR package, or the Hungarian algorithm
 #'     (Papadimitriou and Steiglitz, 1982) (\code{"hungarian"})
-#'     as implemented in the clue package (Hornik, 2005)?
-#'     The \code{"optmatch"} method works really well
-#'     but does take a lot more computational time if you have, say, 1000
-#'     samples. If you use the \code{"optmatch"} option, you should note
-#'     that the optmatch package uses a super strange license:
-#'     \url{https://cran.r-project.org/package=optmatch/LICENSE}. If this
-#'     license doesn't work for you (because you are not in academia, or
-#'     because you don't believe in restrictive licenses), then
-#'     try out the \code{"hungarian"} method.
+#'     as implemented in the clue package (Hornik, 2005)? The
+#'     Hungarian method almost always works better, so is the default.
 #'
 #' @references
 #' \itemize{
-#'   \item{Hansen, Ben B., and Stephanie Olsen Klopfer. "Optimal full matching and related designs via network flows." Journal of computational and Graphical Statistics 15, no. 3 (2006): 609-627.}
-#'   \item{Gale, David, and Lloyd S. Shapley. "College admissions and the stability of marriage." The American Mathematical Monthly 69, no. 1 (1962): 9-15.}
+#'   \item{Gale, David, and Lloyd S. Shapley. "College admissions and the stability of marriage." \emph{The American Mathematical Monthly} 69, no. 1 (1962): 9-15. \doi{10.1080/00029890.1962.11989827}.}
 #'   \item{C. Papadimitriou and K. Steiglitz (1982), Combinatorial Optimization: Algorithms and Complexity. Englewood Cliffs: Prentice Hall.}
-#'   \item{Hornik K (2005). "A CLUE for CLUster Ensembles." Journal of Statistical Software, 14(12). doi: 10.18637/jss.v014.i12}
+#'   \item{Hornik K (2005). "A CLUE for CLUster Ensembles." \emph{Journal of Statistical Software}, 14(12). \doi{10.18637/jss.v014.i12}. \doi{10.18637/jss.v014.i12}.}
 #' }
 #'
 #' @return A list with two elements:
@@ -73,7 +64,7 @@ est_sv <- function(mat, n_sv, design_obs, use_sva = FALSE) {
 #' }
 #'
 #' @author David Gerard
-permute_design <- function(design_perm, sv, target_cor, method = c("optmatch", "hungarian", "marriage")) {
+permute_design <- function(design_perm, sv, target_cor, method = c("hungarian", "marriage")) {
   ## Check input --------------------------------------------------------------
   assertthat::are_equal(nrow(design_perm), nrow(sv))
   assertthat::are_equal(ncol(design_perm), nrow(target_cor))
@@ -83,15 +74,6 @@ permute_design <- function(design_perm, sv, target_cor, method = c("optmatch", "
   sv <- scale(sv)
 
   method <- match.arg(method)
-  if (method == "optmatch" & !requireNamespace("optmatch", quietly = TRUE)) {
-    stop(paste0("\nPackage optmatch must be installed to use `method = \"optmatch\"`\n",
-                "You can install it with\n\n",
-                "install.packages(\"optmatch\")\n\n",
-                "Note that optmatch uses a strange non-standard license:\n",
-                "https://cran.r-project.org/package=optmatch/LICENSE\n"))
-  } else if (method == "optmatch") {
-    message_fun("optmatch")
-  }
 
   ## Generate latent factors --------------------------------------------------
   sigma11 <- stats::cor(design_perm)
@@ -102,13 +84,7 @@ permute_design <- function(design_perm, sv, target_cor, method = c("optmatch", "
 
   ## Get permutations ---------------------------------------------------------
   distmat <- as.matrix(pdist::pdist(X = scale(design_perm), Y = scale(latent_var)))
-  if (method == "optmatch") {
-    dimnames(distmat) <- list(treated = paste0("O", seq_len(nsamp)), control = paste0("L", seq_len(nsamp)))
-    suppressWarnings(matchout <- optmatch::pairmatch(distmat))
-    ogroup <- matchout[attributes(matchout)$contrast.group]
-    lgroup <- matchout[!attributes(matchout)$contrast.group]
-    design_perm <- design_perm[match(lgroup, ogroup), , drop = FALSE]
-  } else if (method == "marriage") {
+  if (method == "marriage") {
     matchout <- matchingR::galeShapley.marriageMarket(proposerUtils = -1 * distmat, reviewerUtils = -1 * t(distmat))
     design_perm <- design_perm[matchout$proposals, , drop = FALSE]
   } else if (method == "hungarian") {
@@ -145,10 +121,9 @@ permute_design <- function(design_perm, sv, target_cor, method = c("optmatch", "
 #'
 #' @references
 #' \itemize{
-#'   \item{Gale, David, and Lloyd S. Shapley. "College admissions and the stability of marriage." The American Mathematical Monthly 69, no. 1 (1962): 9-15.}
-#'   \item{Gerard, D (2020). "Data-based RNA-seq simulations by binomial thinning." \emph{BMC Bioinformatics}. 21(1), 206. doi: \href{https://doi.org/10.1186/s12859-020-3450-9}{10.1186/s12859-020-3450-9}.}
-#'   \item{Hansen, Ben B., and Stephanie Olsen Klopfer. "Optimal full matching and related designs via network flows." Journal of computational and Graphical Statistics 15, no. 3 (2006): 609-627.}
-#'   \item{Hornik K (2005). "A CLUE for CLUster Ensembles." Journal of Statistical Software, 14(12). doi: 10.18637/jss.v014.i12}
+#'   \item{Gale, David, and Lloyd S. Shapley. "College admissions and the stability of marriage." \emph{The American Mathematical Monthly} 69, no. 1 (1962): 9-15. \doi{10.1080/00029890.1962.11989827}.}
+#'   \item{Gerard, D (2020). "Data-based RNA-seq simulations by binomial thinning." \emph{BMC Bioinformatics}. 21(1), 206. \doi{10.1186/s12859-020-3450-9}.}
+#'   \item{Hornik K (2005). "A CLUE for CLUster Ensembles." \emph{Journal of Statistical Software}, 14(12). \doi{10.18637/jss.v014.i12}. \doi{10.18637/jss.v014.i12}.}
 #'   \item{C. Papadimitriou and K. Steiglitz (1982), Combinatorial Optimization: Algorithms and Complexity. Englewood Cliffs: Prentice Hall.}
 #' }
 #'
@@ -176,7 +151,7 @@ effective_cor <- function(design_perm,
                           sv,
                           target_cor,
                           calc_first = c("cor", "mean"),
-                          method = c("optmatch", "hungarian", "marriage"),
+                          method = c("hungarian", "marriage"),
                           iternum = 1000) {
   ## Check input -------------------------------------------------------------
   calc_first <- match.arg(calc_first)
@@ -192,15 +167,6 @@ effective_cor <- function(design_perm,
   assertthat::is.count(iternum)
 
   method <- match.arg(method)
-  if (method == "optmatch" & !requireNamespace("optmatch", quietly = TRUE)) {
-    stop(paste0("\nPackage optmatch must be installed to use `method = \"optmatch\"`\n",
-                "You can install it with\n\n",
-                "install.packages(\"optmatch\")\n\n",
-                "Note that optmatch uses a strange non-standard license:\n",
-                "https://cran.r-project.org/package=optmatch/LICENSE\n"))
-  } else if (method == "optmatch") {
-    message_fun("optmatch")
-  }
 
   ## Get estimated correlation
   target_cor <- fix_cor(design_perm = design_perm, target_cor = target_cor)
@@ -276,7 +242,7 @@ effective_cor <- function(design_perm,
 #'
 #' @references
 #' \itemize{
-#'   \item{Gerard, D (2020). "Data-based RNA-seq simulations by binomial thinning." \emph{BMC Bioinformatics}. 21(1), 206. doi: \href{https://doi.org/10.1186/s12859-020-3450-9}{10.1186/s12859-020-3450-9}.}
+#'   \item{Gerard, D (2020). "Data-based RNA-seq simulations by binomial thinning." \emph{BMC Bioinformatics}. 21(1), 206. \doi{10.1186/s12859-020-3450-9}.}
 #' }
 #'
 #' @export
